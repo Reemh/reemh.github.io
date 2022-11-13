@@ -93,8 +93,6 @@ For simplicity, I'll just present two examples that I've worked with closely.
 ### Tip
 If you want to ignore git hooks, add the  `--no-verify` argument to your git command. Please only do this only if you absolutely know what you are doing.
 
-## Automatic release notes generation
-
 ## The coding part (demo)
 As mentioned before, the githooks are automatically in any repository that was initialized with `git init` (so every repository).
 
@@ -159,3 +157,16 @@ git diff --cached --name-only | \
     grep -E $FILES_PATTERN | \
     GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && echo 'COMMIT REJECTED Found "$FORBIDDEN" references. Please remove them before commiting' && exit 1
 ```
+
+## The limitations of this approach
+Those hooks exists in the `.git` repository which are usually not committed. Which means, every time you want to enforce something, you need to make sure that everyone has the same hooks.
+This will also get quickly messy to handle all the regular expressions and making the possible patterns for the commit message more complicated.
+
+### Husky
+Since I'm writing a lot of **Node.js** code, my project uses [Husky](https://github.com/typicode/husky), an npm package that improves commit messages and the management of the hooks in a Node.js project.
+It is a reasonable option that scales and helps you define everything only once for all.
+
+### Commitlint
+
+
+## Automatic release notes generation
