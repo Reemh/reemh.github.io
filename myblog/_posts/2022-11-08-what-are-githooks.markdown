@@ -167,6 +167,31 @@ Since I'm writing a lot of **Node.js** code, my project uses [Husky](https://git
 It is a reasonable option that scales and helps you define everything only once for all.
 
 ### Commitlint
+An awesome package that helps you get high commit message quality and short feedback cycles by linting commit messages right when they are authored is [commitlint](https://commitlint.js.org/#/)
 
+### Conventional Commits
+A [commit convention](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine readable meaning to commit messages.
+It makes it easier to write a set of automated tools on top of that and it's widely used in open source community.
+
+The commit message structure looks like this
+```
+<type>[optional scope]: <description>
+[optional body]
+[optional footer(s)]
+```
+
+So when following that convention in combination with *commitlint* as mentioned above, we get the following structure:
+```
+type(scope?): subject
+body?
+footer?
+```
+
+So the example we've seen in the screenshots before can become something like this (an optional body was added here for demonstration)
+```
+feat(blog): Add limitation part.
+Write the paragraph that explains what the limitations of git hooks are.
+[ref: #1]
+```
 
 ## Automatic release notes generation
