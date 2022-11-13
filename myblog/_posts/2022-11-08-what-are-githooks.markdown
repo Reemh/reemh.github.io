@@ -66,10 +66,96 @@ If you know that, feels free to jump to the next section.
 
 If not, then continue reading.
 
+<!--- do we need this part?
+-->
+There are two groups of these hooks: *client-side* and *server-side*. 
+*Client-side* hooks are triggered by operations such as committing and merging, 
+while *server-side* hooks run on network operations such as receiving pushed commits. 
+You can use these hooks for all sorts of reasons. [1](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 
+<!--- These scripts run before and after pushes to the server.-->
+
+<!---todo add figure-->
 
 
 
 ## Why should you care?
+
+Git hooks are a great way to improve developers' time and collaboration by automatically checking things like grammer, style and length of commit messages and it's a way to automatically check certain things were successful such as test suits and coverage checks or automatically pushing code to stage or production.
+
 ## How to use githooks to improve your workflow?
+
+For simplicity, I'll just present two examples that I've worked with closely.
+
+### Pre-commit to enforcing certain rules for a commit message
+
+
+### Tip
+If you want to ignore git hooks, add the  `--no-verify` argument to your git command. Please only do this only if you absolutely know what you are doing.
+
 ## Automatic release notes generation
+
+## The coding part (demo)
+As mentioned before, the githooks are automatically in any repository that was initialized with `git init` (so every repository).
+
+The git hooks are by default under `.git/hooks` subfolder, which by default contains a list of samples written as shell scripts. They are very simple to follow and use.
+
+Here's the `commit-msg.sample` that checks the duplicate SOB author lines in the message:
+```bash
+#!/bin/sh
+#
+# An example hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "commit-msg".
+
+# Uncomment the below to add a Signed-off-by line to the message.
+# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
+# hook is more suited to it.
+#
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# This example catches duplicate Signed-off-by lines.
+
+test "" = "$(grep '^Signed-off-by: ' "$1" |
+	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
+	echo >&2 Duplicate Signed-off-by lines.
+	exit 1
+}
+```
+
+1. Duplicate the `commit-msg.sample` and rename it to `commit-msg` (with no extension at all).
+1. Give it execution permission using `chmod +x .git/hooks/commit-msg`
+1. Modify the file with the code you need (see examples below)
+1. Save your changes and you are ready to go! It will be picked up automatically by git.
+
+Let's modify this hook to enforce having a reference ticket number in the commit message like this:
+```ruby
+#!/usr/bin/env ruby
+message_file = ARGV[0]
+message = File.read(message_file)
+
+$regex = /\[ref: #(\d+)\]/
+
+if !$regex.match(message)
+  puts "[COMMIT-MSG] Your message is not formatted correctly"
+  exit 1
+end
+```
+
+### Prohibt unwanted code
+In this example, I'm making sure that nobody forgets debugging code that breaks.
+
+I'll extend the `pre-commit` with this code:
+
+```bash
+FILES_PATTERN='\.(js|ts)(\..+)?$'
+FORBIDDEN='debugger;'
+git diff --cached --name-only | \
+    grep -E $FILES_PATTERN | \
+    GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && echo 'COMMIT REJECTED Found "$FORBIDDEN" references. Please remove them before commiting' && exit 1
+```
