@@ -225,15 +225,15 @@ An example config file that would adher to the conventional commits looks like t
 ```js
 /**
  * List of possible commit scopes based on the folders
- * which is a good practice in monorepos
+ * which is a good practice in a monorepo
  */
-const Scopes = [
+const scopes = [
   'workspace',
   'tooling',
   ...getFolders('./packages'),
 ];
 
-const Configuration = {
+const configuration = {
   /*
    * Resolve and load @commitlint/config-conventional from node_modules.
    * Referenced packages must be installed
@@ -273,7 +273,7 @@ const Configuration = {
   }
 };
 
-module.exports = Configuration;
+module.exports = configuration;
 
 ```
 This examples enforces commit length, style and many others in just a basic config object. We will talk more about the `parserPreset` later.
