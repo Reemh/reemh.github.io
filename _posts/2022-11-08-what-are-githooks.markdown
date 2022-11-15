@@ -151,11 +151,13 @@ end
 Here's an example of when committing using a message that doesn't contain the `[ref: #<number>]` pattern:
 
 ![Error when using bad commit message](/assets/images/example-error.png "Error when using bad commit message")
+
 *An error when using bad commit message*
 
 Here's a successful commit message that passed the hook:
 
 ![A successful commit message](/assets/images/example-commit-success.png "A successful commit message")
+
 *A successful commit message*
 
 
