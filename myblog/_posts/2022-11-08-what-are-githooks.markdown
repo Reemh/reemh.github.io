@@ -7,7 +7,7 @@ permalink: /githooks/
 ---
 
 # What are githooks?
-## The problem
+## The problem part 1
 Imagine you have a team of great software engineers with different level of expertise. 
 The are having issues working together as each person has her/his prefered way of writing and comitting code.
 
@@ -24,7 +24,7 @@ She thought "the bug" was obviously fixed some other way.
 
 In the next release, a feature developed by another team was broken because they were depending on a util that was generated from the code removed by Alice before. Nobody would have known that. "The bug" mentioned in the commit was documented around that time in the system but who would be able to go search for a ticket that was "closed" any time around the commit date. And to admit it, we all know, we usually don't close our tickets on the same day we commit something... and some tickets can be open for soooo long. I personally had a ticket open for a couple of months and worked with a ticketing system with thousands of tickets created every single day! 
 
-## The solution
+## The solution part 1
 A ticket number!
 
 End of story.
@@ -42,11 +42,18 @@ He keeps forgetting that ticket number on the commit message.
 Alice keeps bothering him with that.
 He thinks she's not focusing on the essential work he is doing in his Pull Request. She thinks he's not following "the rule" of how the team works. The guys are __not__ doing well together.
 
-### The result
+## The result
 A frustrated team.
+
+![A frustrated team](https://www.gomodus.com/hubfs/Modus-Engagement-business-people-1.png "a frustrated team")
+*Image source: https://www.gomodus.com/blog/b2b-sales-leads*
 
 ## The solution part 2
 GitHooks!
+
+![Git Hooks](https://user-images.githubusercontent.com/773481/74965961-3f427880-5427-11ea-92b3-1a74c7e15db1.png "GitHooks")
+
+*Image source: https://github.com/butschster/LaravelGitHooks*
 
 Congratulations if you read that far. Now let's jump into the technical part.
 
@@ -74,8 +81,7 @@ You can use these hooks for all sorts of reasons. [1](https://git-scm.com/book/e
 
 <!---todo add figure-->
 
-![Git commit hooks path](/home/reem/workspaces/reemh.github.io/myblog/assets/images/commit-hooks-final.drawio.png "Commit hooks")
-
+![Git commit hooks path](/assets/images/commit-hooks-final.drawio.png "Commit hooks")
 
 ## Why should you care?
 
@@ -87,14 +93,13 @@ For simplicity, I'll just present two examples that I've worked with closely.
 
 ### Pre-commit to enforcing certain rules for a commit message
 
-
-### Tip
-If you want to ignore git hooks, add the  `--no-verify` argument to your git command. Please only do this only if you absolutely know what you are doing.
-
 ## The coding part (demo)
 As mentioned before, the githooks are automatically in any repository that was initialized with `git init` (so every repository).
 
 The git hooks are by default under `.git/hooks` subfolder, which by default contains a list of samples written as shell scripts. They are very simple to follow and use.
+
+![The default githooks](/assets/images/githooks-path-samples.png "Githooks path")
+*The default githooks available in any repository*
 
 Here's the `commit-msg.sample` that checks the duplicate SOB author lines in the message:
 ```bash
@@ -143,6 +148,21 @@ if !$regex.match(message)
 end
 ```
 
+Here's an example of when committing using a message that doesn't contain the `[ref: #<number>]` pattern:
+
+![Error when using bad commit message](/assets/images/example-error.png "Error when using bad commit message")
+*An error when using bad commit message*
+
+Here's a successful commit message that passed the hook:
+
+![A successful commit message](/assets/images/example-commit-success.png "A successful commit message")
+*A successful commit message*
+
+
+### Tip
+If you want to ignore git hooks, add the  `--no-verify` argument to your git command. Please only do this only if you absolutely know what you are doing.
+
+<!---
 ### Prohibt unwanted code
 In this example, I'm making sure that nobody forgets debugging code that breaks.
 
@@ -155,108 +175,7 @@ git diff --cached --name-only | \
     grep -E $FILES_PATTERN | \
     GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && echo 'COMMIT REJECTED Found "$FORBIDDEN" references. Please remove them before commiting' && exit 1
 ```
-
-## The limitations of this approach
-Those hooks exists in the `.git` repository which are usually not committed. Which means, every time you want to enforce something, you need to make sure that everyone has the same hooks.
-This will also get quickly messy to handle all the regular expressions and making the possible patterns for the commit message more complicated.
-
-### Husky
-Since I'm writing a lot of **Node.js** code, my project uses [Husky](https://github.com/typicode/husky), an npm package that improves commit messages and the management of the hooks in a Node.js project.
-It is a reasonable option that scales and helps you define everything only once for all.
-
-### Commitlint
-An awesome package that helps you get high commit message quality and short feedback cycles by linting commit messages right when they are authored is [commitlint](https://commitlint.js.org/#/).
-It is very easy to use by just installing `commitlint` as a devDependencies in your project and defining the configurations you need in a `commitlint.config.js` file.
-This is so straight forward in comparision to what we were trying to do with the plain git hooks and parsing the params above.
-
-An example config would look like this
-```js
-// list of possible commit scopes based on the folders
-const Scopes = [
-  'workspace', // If it is related to the whole repository
-  'tooling',
-  ...getFolders('./packages'),
-];
-
-const Configuration = {
-  /*
-   * Resolve and load @commitlint/config-conventional from node_modules.
-   * Referenced packages must be installed
-   */
-  extends: ['@commitlint/config-conventional'],
- 
-  parserPreset: {
-    parserOpts: {
-      issuePrefixes: ['ABC-', '#'],
-    },
-  },
-  /*
-   * Resolve and load @commitlint/format from node_modules.
-   * Referenced package must be installed
-   */
-  formatter: '@commitlint/format',
-  /*
-   * Any rules defined here will override rules from @commitlint/config-conventional
-   */
-  rules: {
-	'body-leading-blank': [1, 'always'],
-    'footer-leading-blank': [1, 'always'],
-    'header-max-length': [1, 'always', 72],
-    'scope-case': [2, 'always', 'lower-case'],
-    'scope-empty': [2, 'never'],
-    'scope-enum': [2, 'always', scopes],
-    'subject-case': [
-      1,
-      'always',
-      ['sentence-case', 'start-case', 'pascal-case', 'upper-case'],
-    ],
-    'subject-empty': [2, 'never'],
-    'subject-full-stop': [1, 'always', '.'],
-    'type-case': [2, 'always', 'lower-case'],
-    'type-empty': [2, 'never'],
-    'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'revert', 'release']],
-  },
-  /*
-   * Functions that return true if commitlint should ignore the given message.
-   */
-  ignores: [(commit) => commit === ''],
-  /*
-   * Whether commitlint uses the default ignore rules.
-   */
-  defaultIgnores: true,
-  /*
-   * Custom URL to show upon failure
-   */
-  helpUrl:
-    'https://github.com/conventional-changelog/commitlint/#what-is-commitlint',
-  /*
-   * Custom prompt configs
-   */
-  prompt: {
-    messages: {},
-    questions: {
-      type: {
-        description: 'please input type:',
-      },
-    },
-  },
-};
-
-module.exports = Configuration;
-
-```
-This examples enforces commit length, style and many others in just a basic config object. We will talk more about the `parserPreset` later.
-
-This can be configured to run as a *husky* **pre-commit** hook for local setting and can be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly.
-
-Here's how it looks like in GitLab CI
-```
-lint:commit:
-  stage: lint
-  script:
-    - echo "${CI_COMMIT_MESSAGE}" | npx commitlint
-```
-
+--->
 ### Conventional Commits
 A [commit convention](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine readable meaning to commit messages.
 It makes it easier to write a set of automated tools on top of that such as:
@@ -284,6 +203,89 @@ So the example we've seen in the screenshots before can become something like th
 feat(blog): Add limitation part.
 Write the paragraph that explains what the limitations of git hooks are.
 [ref: #1]
+```
+
+## The limitations of plain git hooks
+* Those hooks exists in the `.git` repository which are usually not committed. Which means, every time you want to enforce something, you need to make sure that everyone has the same hooks.
+
+* This will also get quickly challenging to handle all the regular expressions and adher to something like converntional commits.
+
+### Husky
+Since I'm writing a lot of **Node.js** code, my projects use [Husky](https://github.com/typicode/husky), an npm package that improves commit messages and the management of the hooks in a Node.js project.
+
+It is a great option that scales and helps you define everything only once in one place for all.
+
+### Commitlint
+[commitlint](https://commitlint.js.org/#/) is an awesome package that helps you get commit messages with high quality and provides short feedback cycles by linting commit messages right when they are authored.
+
+It is very easy to use by just installing `commitlint` as a `devDependencies` in your project and defining the configurations you need in a `commitlint.config.js` file.
+This is so straight forward in comparision to what we were trying to do with the plain git hooks and parsing the params above.
+
+An example config file that would adher to the conventional commits looks like this
+```js
+/**
+ * List of possible commit scopes based on the folders
+ * which is a good practice in monorepos
+ */
+const Scopes = [
+  'workspace',
+  'tooling',
+  ...getFolders('./packages'),
+];
+
+const Configuration = {
+  /*
+   * Resolve and load @commitlint/config-conventional from node_modules.
+   * Referenced packages must be installed
+   */
+  extends: ['@commitlint/config-conventional'],
+ 
+  parserPreset: {
+    parserOpts: {
+      issuePrefixes: ['ABC-', '#'],
+    },
+  },
+  /*
+   * Resolve and load @commitlint/format from node_modules.
+   * Referenced package must be installed
+   */
+  formatter: '@commitlint/format',
+  /*
+   * Any rules defined here will override rules from @commitlint/config-conventional
+   */
+  rules: {
+	  'body-leading-blank': [1, 'always'],
+    'footer-leading-blank': [1, 'always'],
+    'header-max-length': [1, 'always', 72],
+    'scope-case': [2, 'always', 'lower-case'],
+    'scope-empty': [2, 'never'],
+    'scope-enum': [2, 'always', scopes],
+    'subject-case': [
+      1,
+      'always',
+      ['sentence-case', 'start-case', 'pascal-case', 'upper-case'],
+    ],
+    'subject-empty': [2, 'never'],
+    'subject-full-stop': [1, 'always', '.'],
+    'type-case': [2, 'always', 'lower-case'],
+    'type-empty': [2, 'never'],
+    'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'revert', 'release']],
+  }
+};
+
+module.exports = Configuration;
+
+```
+This examples enforces commit length, style and many others in just a basic config object. We will talk more about the `parserPreset` later.
+
+This can be configured to run as a *husky* **pre-commit** hook for local setting and can be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly.
+
+Here's how it looks like in GitLab CI
+```
+lint:commit:
+  stage: lint
+  script:
+    - echo "${CI_COMMIT_MESSAGE}" | npx commitlint
 ```
 
 ## Automatic release notes generation
