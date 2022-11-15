@@ -167,11 +167,105 @@ Since I'm writing a lot of **Node.js** code, my project uses [Husky](https://git
 It is a reasonable option that scales and helps you define everything only once for all.
 
 ### Commitlint
-An awesome package that helps you get high commit message quality and short feedback cycles by linting commit messages right when they are authored is [commitlint](https://commitlint.js.org/#/)
+An awesome package that helps you get high commit message quality and short feedback cycles by linting commit messages right when they are authored is [commitlint](https://commitlint.js.org/#/).
+It is very easy to use by just installing `commitlint` as a devDependencies in your project and defining the configurations you need in a `commitlint.config.js` file.
+This is so straight forward in comparision to what we were trying to do with the plain git hooks and parsing the params above.
+
+An example config would look like this
+```js
+// list of possible commit scopes based on the folders
+const Scopes = [
+  'workspace', // If it is related to the whole repository
+  'tooling',
+  ...getFolders('./packages'),
+];
+
+const Configuration = {
+  /*
+   * Resolve and load @commitlint/config-conventional from node_modules.
+   * Referenced packages must be installed
+   */
+  extends: ['@commitlint/config-conventional'],
+ 
+  parserPreset: {
+    parserOpts: {
+      issuePrefixes: ['ABC-', '#'],
+    },
+  },
+  /*
+   * Resolve and load @commitlint/format from node_modules.
+   * Referenced package must be installed
+   */
+  formatter: '@commitlint/format',
+  /*
+   * Any rules defined here will override rules from @commitlint/config-conventional
+   */
+  rules: {
+	'body-leading-blank': [1, 'always'],
+    'footer-leading-blank': [1, 'always'],
+    'header-max-length': [1, 'always', 72],
+    'scope-case': [2, 'always', 'lower-case'],
+    'scope-empty': [2, 'never'],
+    'scope-enum': [2, 'always', scopes],
+    'subject-case': [
+      1,
+      'always',
+      ['sentence-case', 'start-case', 'pascal-case', 'upper-case'],
+    ],
+    'subject-empty': [2, 'never'],
+    'subject-full-stop': [1, 'always', '.'],
+    'type-case': [2, 'always', 'lower-case'],
+    'type-empty': [2, 'never'],
+    'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'revert', 'release']],
+  },
+  /*
+   * Functions that return true if commitlint should ignore the given message.
+   */
+  ignores: [(commit) => commit === ''],
+  /*
+   * Whether commitlint uses the default ignore rules.
+   */
+  defaultIgnores: true,
+  /*
+   * Custom URL to show upon failure
+   */
+  helpUrl:
+    'https://github.com/conventional-changelog/commitlint/#what-is-commitlint',
+  /*
+   * Custom prompt configs
+   */
+  prompt: {
+    messages: {},
+    questions: {
+      type: {
+        description: 'please input type:',
+      },
+    },
+  },
+};
+
+module.exports = Configuration;
+
+```
+This examples enforces commit length, style and many others in just a basic config object. We will talk more about the `parserPreset` later.
+
+This can be configured to run as a *husky* **pre-commit** hook for local setting and can be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly.
+
+Here's how it looks like in GitLab CI
+```
+lint:commit:
+  stage: lint
+  script:
+    - echo "${CI_COMMIT_MESSAGE}" | npx commitlint
+```
 
 ### Conventional Commits
 A [commit convention](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine readable meaning to commit messages.
-It makes it easier to write a set of automated tools on top of that and it's widely used in open source community.
+It makes it easier to write a set of automated tools on top of that such as:
+
+* Automatically generating CHANGELOGs.
+* Automatically determining a semantic version bump (based on the types of commits landed).
+* Triggering build and publish processes.
 
 The commit message structure looks like this
 ```
