@@ -1,17 +1,18 @@
 ---
 layout: post
-title:  "What are githooks"
+title:  "What are Git hooks?"
 date:   2022-11-08 20:07:52 +0200
 categories: tech
-permalink: /githooks/
+permalink: /Git hooks/
 ---
 
-# What are githooks?
-## The problem part 1
-Imagine you have a team of great software engineers with different level of expertise. 
-The are having issues working together as each person has her/his prefered way of writing and comitting code.
+tl;dr
 
-Alice just recently joined the team and when she was browsing through some code, she found a line of code that she thought was useless.
+
+Imagine you have a team of great software engineers with different level of expertise. 
+They are having issues working together as each person has her/his prefered way of writing and comitting code.
+
+Alice joined the team recently and when she was browsing through some code, she found a line of code that she thought was useless.
 
 She checked the commit message for that line and found the following message:
 
@@ -19,58 +20,47 @@ She checked the commit message for that line and found the following message:
 
 There was no ticket number, no further info, no explanation or any references. The author of that line is not in the company anymore to follow up with.
 
-She removed that line after she ran all local tests that were green for her. 
-She thought "the bug" was obviously fixed some other way.
+She removed that line and ran all local tests successfully. 
+She thought "the bug" was obviously fixed in some other way.
 
-In the next release, a feature developed by another team was broken because they were depending on a util that was generated from the code removed by Alice before. Nobody would have known that. "The bug" mentioned in the commit was documented around that time in the system but who would be able to go search for a ticket that was "closed" any time around the commit date. And to admit it, we all know, we usually don't close our tickets on the same day we commit something... and some tickets can be open for soooo long. I personally had a ticket open for a couple of months and worked with a ticketing system with thousands of tickets created every single day! 
+In the next release, a feature developed by another team was broken because they were depending on a util that was generated from the code removed by Alice before. Nobody would have known that. "The bug" mentioned in the commit was documented around that time in the system but who would be able to go search for a ticket that was "closed" any time around the commit date. And to admit it, we all know, we usually don't close our tickets on the same day we commit something and some tickets can be open for a long time. I personally had a ticket open for a couple of months and worked with a ticketing system with thousands of tickets created every single day! 
 
-## The solution part 1
-A ticket number!
+How can we solve this?
+
+**Add a ticket number to each commit message!**
 
 End of story.
 
-Ok now you might tell me but not everyone writes something useful in tickets. Now that problem needs a different post. Let's focus on __enforcing__ a ticket number in every commit message.
+(I know that not everyone writes useful tickets, but that problem needs a different post. Instead, let's focus on __enforcing__ a ticket number in every commit message.)
 
-TODO add image
-
-
-## The problem part 2
 Now Alice, having had that bitter experience, documents every single bug she has on a ticket and makes sure every commit has a ticket number to make it easier to understand the reasoning behind it.
 
-Bob has just joined the team. 
-He keeps forgetting that ticket number on the commit message.
+Her new colleague Bob has just joined the team and keeps forgetting the ticket number on the commit message.
 Alice keeps bothering him with that.
-He thinks she's not focusing on the essential work he is doing in his Pull Request. She thinks he's not following "the rule" of how the team works. The guys are __not__ doing well together.
-
-## The result
-A frustrated team.
+He thinks she's not focusing on the essential work he is doing in his pull requests. She thinks he is not following "the rule" of how the team works. As you can imagine, the two are __not__ doing well together and the result is a frustrated team.
 
 ![A frustrated team](https://www.gomodus.com/hubfs/Modus-Engagement-business-people-1.png "a frustrated team")
 *Image source: https://www.gomodus.com/blog/b2b-sales-leads*
 
-## The solution part 2
-GitHooks!
+It's time to rescue the team spirit and introduce Git hooks!
 
-![Git Hooks](https://user-images.githubusercontent.com/773481/74965961-3f427880-5427-11ea-92b3-1a74c7e15db1.png "GitHooks")
+![Git Hooks](https://user-images.githubusercontent.com/773481/74965961-3f427880-5427-11ea-92b3-1a74c7e15db1.png "GitHooks"){: width="150" }
 
 *Image source: https://github.com/butschster/LaravelGitHooks*
 
-Congratulations if you read that far. Now let's jump into the technical part.
+## What are Git hooks?
 
-## What are Githooks?
-[Githooks](https://githooks.com/) (or Git Hooks) are scripts that Git executes before or after events such as: commit, push, and receive.
+[Git hooks](https://githooks.com/) are scripts that Git executes before or after events such as commit, push, and receive. They are available in the standard Git installation, so you can use them right away.
 
-### Requirements
-* An installed Git, nothing more to downloads.
+Git hooks are a great way to improve developers' time and collaboration by automatically checking things like grammer, style and length of commit messages and it's a way to automatically check certain things were successful such as test suits and coverage checks or automatically pushing code to stage or production.
 
-### Examples
+### Types of hooks
 
-<!--- do we need this part?
--->
-There are two groups of these hooks: *client-side* and *server-side*. 
-*Client-side* hooks are triggered by operations such as committing and merging, 
-while *server-side* hooks run on network operations such as receiving pushed commits. 
-You can use these hooks for all sorts of reasons. [1](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
+<!--- do we need this part?-->
+There are two groups of Git hooks: *client-side* and *server-side*. 
+
+*Client-side* hooks are triggered by operations such as committing and merging, while *server-side* hooks run on network operations such as receiving pushed commits. 
+You can use these hooks for all sorts of use cases. [1](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) Examples include:
 
 <!--- These scripts run before and after pushes to the server.-->
 
@@ -81,27 +71,28 @@ You can use these hooks for all sorts of reasons. [1](https://git-scm.com/book/e
 
 <!---todo add figure-->
 
+@@ this figure needs to be described more or moved before the list of use cases@@
+
 ![Git commit hooks path](/assets/images/commit-hooks-final.drawio.png "Commit hooks")
 
-## Why should you care?
-
-Git hooks are a great way to improve developers' time and collaboration by automatically checking things like grammer, style and length of commit messages and it's a way to automatically check certain things were successful such as test suits and coverage checks or automatically pushing code to stage or production.
-
-## How to use githooks to improve your workflow?
-
-For simplicity, I'll just present two examples that I've worked with closely.
-
-### Pre-commit to enforcing certain rules for a commit message
 
 ## The coding part (demo)
-As mentioned before, the githooks are automatically in any repository that was initialized with `git init` (so every repository).
 
-The git hooks are by default under `.git/hooks` subfolder, which by default contains a list of samples written as shell scripts. They are very simple to follow and use.
+For simplicity, I'll just present two examples that I've worked with closely:
 
-![The default githooks](/assets/images/githooks-path-samples.png "Githooks path")
-*The default githooks available in any repository*
+1. Pre-commit to enforcing certain rules for a commit message
+2. Enforce conventional commits for commit messages @@ correct ??? @@
 
-Here's the `commit-msg.sample` that checks the duplicate SOB author lines in the message:
+
+As mentioned before, Git hooks are available in any repository that was initialized with `git init` (so every repository).
+
+The Git hooks are by default located in the `.git/hooks` subfolder, which comes with a list of samples written as shell scripts. They are very simple to follow and use.
+
+![The default Git hooks](/assets/images/Git hooks-path-samples.png "Git hooks path")
+*The default Git hooks available in any repository*
+
+Here is the `commit-msg.sample` that checks the duplicate signed-off-by (SOB) author lines in the commit message:
+
 ```bash
 #!/bin/sh
 #
@@ -129,12 +120,15 @@ test "" = "$(grep '^Signed-off-by: ' "$1" |
 }
 ```
 
+Follow the next steps to activate your first Git hook:
+
 1. Duplicate the `commit-msg.sample` and rename it to `commit-msg` (with no extension at all).
 1. Give it execution permission using `chmod +x .git/hooks/commit-msg`
 1. Modify the file with the code you need (see examples below)
 1. Save your changes and you are ready to go! It will be picked up automatically by git.
 
-Let's modify this hook to enforce having a reference ticket number in the commit message like this:
+Now, let's modify this hook to enforce having a reference ticket number in the commit message like this:
+
 ```ruby
 #!/usr/bin/env ruby
 message_file = ARGV[0]
@@ -148,21 +142,20 @@ if !$regex.match(message)
 end
 ```
 
-Here's an example of when committing using a message that doesn't contain the `[ref: #<number>]` pattern:
+After saving the file you will get the follwing error when your commit message that doesn't contain the `[ref: #<number>]` pattern:
 
 ![Error when using bad commit message](/assets/images/example-error.png "Error when using bad commit message")
 
 *An error when using bad commit message*
 
-Here's a successful commit message that passed the hook:
+And here's a successful commit message that passed the hook:
 
 ![A successful commit message](/assets/images/example-commit-success.png "A successful commit message")
 
 *A successful commit message*
 
 
-### Tip
-If you want to ignore git hooks, add the  `--no-verify` argument to your git command. Please only do this only if you absolutely know what you are doing.
+**Tip:** If you want to ignore Git hooks, add the  `--no-verify` argument to your git command. Please only do this only if you absolutely know what you are doing.
 
 <!---
 ### Prohibt unwanted code
@@ -178,52 +171,89 @@ git diff --cached --name-only | \
     GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && echo 'COMMIT REJECTED Found "$FORBIDDEN" references. Please remove them before commiting' && exit 1
 ```
 --->
+
 ### Conventional Commits
-A [commit convention](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine readable meaning to commit messages.
-It makes it easier to write a set of automated tools on top of that such as:
+
+A [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine readable meaning to commit messages. It makes it easier to write a set of automated tools on top of that such as:
 
 * Automatically generating CHANGELOGs.
 * Automatically determining a semantic version bump (based on the types of commits landed).
 * Triggering build and publish processes.
 
-The commit message structure looks like this
+The structure of conventional commits messages looks like this:
+
 ```
 <type>[optional scope]: <description>
 [optional body]
 [optional footer(s)]
 ```
 
-So when following that convention in combination with *commitlint* as mentioned above, we get the following structure:
+@@ what is commitlint? you haven't introduced this before. I'd expect at least a sentence and a link to the page. @@
+
+Following the convention mentioned above with *commitlint*, a commit message has the following structure:
+
 ```
 type(scope?): subject
 body?
 footer?
 ```
 
+@@ unclear what screenshot do you reference here? @@
+
 So the example we've seen in the screenshots before can become something like this (an optional body was added here for demonstration)
+
 ```
 feat(blog): Add limitation part.
-Write the paragraph that explains what the limitations of git hooks are.
+Write the paragraph that explains what the limitations of Git hooks are.
 [ref: #1]
 ```
 
-## The limitations of plain git hooks
-* Those hooks exists in the `.git` repository which are usually not committed. Which means, every time you want to enforce something, you need to make sure that everyone has the same hooks.
+### The limitations of plain Git hooks
 
-* This will also get quickly challenging to handle all the regular expressions and adher to something like converntional commits.
+Distributing the Git hooks to every developer is a typical problem because the hooks are located in the `.git` repository which are usually not pushed to the remote repository. It will also get quickly challenging to handle all the regular expressions and adher to something like converntional commits.
 
-### Husky
+@@ add transition sentence here to introduce husky @@
+
+## Husky
+@@ now you are talking in I-form while before you wrote in you and unpersonal form @@
+
+@@ Husky solves this issue by "installing" the Git hooks from source code files located in the repository. Another advantage is that we can Node.js scripts (instead of shell scripts).@@
+
 Since I'm writing a lot of **Node.js** code, my projects use [Husky](https://github.com/typicode/husky), an npm package that improves commit messages and the management of the hooks in a Node.js project.
 
 It is a great option that scales and helps you define everything only once in one place for all.
 
-### Commitlint
+Husky works within the `package.json` file by including an object that configures Husky to run certain scripts, and then Husky manages the script at specific points in the Git lifecycle. 
+
+After Husky has finished installing, then run a command that will allows Git hooks to be enabled:
+
+```bash
+npx husky install
+```
+
+Next, you will want to adjust the package.json file. The last command is run after the installation process concludes:
+
+// package.json
+```json
+{
+  "scripts": {
+    "prepare": "husky install"
+  }
+}
+```
+
+## Commitlint
+@@ consider moving this paragraph or section up to introduce commitlint earlier? otherwise move the other example below this section? @@
+
 [commitlint](https://commitlint.js.org/#/) is an awesome package that helps you get commit messages with high quality and provides short feedback cycles by linting commit messages right when they are authored.
 
 It is very easy to use by just installing `commitlint` as a `devDependencies` in your project and defining the configurations you need in a `commitlint.config.js` file.
-This is so straight forward in comparision to what we were trying to do with the plain git hooks and parsing the params above.
+You can see that this is so straight forward in comparision to what we were trying to do with the plain Git hooks and parsing the params above.
 
-An example config file that would adher to the conventional commits looks like this
+@@ what is the filename? where is it located? @@
+
+An example config file that would adher to the conventional commits looks like this:
+
 ```js
 /**
  * List of possible commit scopes based on the folders
@@ -276,13 +306,15 @@ const configuration = {
 };
 
 module.exports = configuration;
-
 ```
-This examples enforces commit length, style and many others in just a basic config object. We will talk more about the `parserPreset` later.
 
-This can be configured to run as a *husky* **pre-commit** hook for local setting and can be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly.
+This examples enforces commit length, style and many others in just a basic config object. We will talk more about the `parserPreset` later.
+@@ do you really want to talk more about `parserPreset` later? otherwise just add a comment block above this code that explains it briefly @@
+
+Commitlint can be configured to run as a *husky* **pre-commit** hook for local setting and can be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly.
 
 Here's how it looks like in GitLab CI
+
 ```
 lint:commit:
   stage: lint
@@ -290,4 +322,6 @@ lint:commit:
     - echo "${CI_COMMIT_MESSAGE}" | npx commitlint
 ```
 
-## Automatic release notes generation
+## Summary
+
+TODO link and mention automatic release notes generation
