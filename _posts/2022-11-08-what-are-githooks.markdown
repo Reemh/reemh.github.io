@@ -2,49 +2,47 @@
 layout: post
 title:  "What are Git hooks?"
 date:   2022-11-08 20:07:52 +0200
-categories: tech
-permalink: /Git hooks/
+categories: [git, tech] 
+tags: [git, githooks, js, husky]
+permalink: /githooks/
 ---
 
-**tl;dr**
-In This post, I introduce the concept of Git hooks and use it to check that the commit message has certain style convention and it contains a ticket number. That's one of many examples of how Git hooks can improve the development workflow and save time and effort.
+<fieldset class="field-set" markdown="1">
+<legend class="leg-title">TL;DR</legend>
+In This post, I introduce the concept of Git hooks and use it to check that the commit message has a certain style convention and it contains a ticket number. That's one of many examples of how Git hooks can improve the development workflow and save time and effort by hooking certain actions in the git workflow.
+</fieldset>
 
-## Introduction
+## The Motivation
 
-Imagine you have a team of great software engineers with different level of expertise. 
-They are having issues working together as each person has her/his prefered way of writing and comitting code.
+Imagine you have a team of great software engineers with different levels of expertise. 
+Each person has his or her preferred way of writing and committing code.
 
-Alice joined the team recently and when she was browsing through some code, she found a line of code that she thought was useless.
-
-She checked the commit message for that line and found the following message:
+Alice joined the team recently and needed to remove a certain line of code.
+She checked the commit message for that and found:
 
 > Fixed the bug
 
-There was no ticket number, no further info, no explanation or any references. The author of that line is not in the company anymore to follow up with.
+There was no ticket number, no further info, no explanation or any reference. The author of that line has left the company so it's not possible to follow up with him.
 
-She removed that line and ran all local tests successfully. 
-She thought "the bug" was obviously fixed in some other way.
+She removed that line and ran all local tests successfully. She thought "the bug" was obviously fixed in some other way.
 
-In the next release, a feature developed by another team was broken because they were depending on a util that was generated from the code removed by Alice before. Nobody would have known that. "The bug" mentioned in the commit was documented around that time in the system but who would be able to go search for a ticket that was "closed" any time around the commit date. And to admit it, we all know, we usually don't close our tickets on the same day we commit something and some tickets can be open for a long time. I personally had a ticket open for a couple of months and worked with a ticketing system with thousands of tickets created every single day! 
+After the next release, "The bug" reappeared again. It was documented in a previous ticket that everyone forgot. Analyzing that piece of code would have been much easier when reading the ticket but since nobody linked the ticket to the code, it was impossible to find it in the sea of tickets.
 
-How can we solve this?
+Improvement idea 💡: **Add a ticket number to every commit message!**
 
-**Add a ticket number to each commit message!**
+I know that not everyone writes useful tickets, but that problem needs a different post. Instead, let's focus on __enforcing__ a ticket number in every commit message. 
 
-End of story.
+Now Alice, having had that bitter experience, documents every single bug she has on a ticket and makes sure every commit has a ticket reference to make it easier to understand the reasoning behind the solution.
 
-(I know that not everyone writes useful tickets, but that problem needs a different post. Instead, let's focus on __enforcing__ a ticket number in every commit message.)
-
-Now Alice, having had that bitter experience, documents every single bug she has on a ticket and makes sure every commit has a ticket number to make it easier to understand the reasoning behind it.
-
-Her new colleague Bob has just joined the team and keeps forgetting the ticket number on the commit message.
-Alice keeps bothering him with that.
-He thinks she's not focusing on the essential work he is doing in his pull requests. She thinks he is not following "the rule" of how the team works. As you can imagine, the two are __not__ doing well together and the result is a frustrated team.
+Bob has just joined the team and he keeps forgetting the ticket number on the commit message.
+Alice keeps reminding him of that.
+He thinks she's not focusing on the essential work in his pull requests. She thinks he is not following "the convention" the team agreed on. As you can imagine, the team is frustrated over a simple problem that has a solution.
 
 ![A frustrated team](https://www.gomodus.com/hubfs/Modus-Engagement-business-people-1.png "a frustrated team")
+
 *Image source: https://www.gomodus.com/blog/b2b-sales-leads*
 
-It's time to rescue the team spirit and introduce Git hooks!
+It's time to automate repetitive boring tasks and introduce Git hooks!
 
 ![Git Hooks](https://user-images.githubusercontent.com/773481/74965961-3f427880-5427-11ea-92b3-1a74c7e15db1.png "GitHooks"){: width="150" }
 
@@ -52,61 +50,64 @@ It's time to rescue the team spirit and introduce Git hooks!
 
 ## What are Git hooks?
 
-[Git hooks](https://githooks.com/) are scripts that Git executes before or after events such as commit, push, and receive. They are available in the standard Git installation, so you can use them right away.
+[Git hooks](https://githooks.com/) are scripts that Git executes before or after events such as commit, push, and receive. 
 
-Git hooks are a great way to improve developers' time and collaboration by automatically checking things like grammer, style and length of commit messages and it's a way to automatically check certain things were successful such as test suits and coverage checks or automatically pushing code to stage or production.
+They are a great way to improve developers' time and collaboration by automatically checking things like grammar, length and style of commit messages before a commit.
+They are also a way to automatically check whether certain tests were successful such as test suits and coverage checks or to automatically push code to stage or production.
 
-As mentioned before, Git hooks are available in any repository that was initialized with `git init` (so every repository).
+Git hooks are available in the standard Git installation, so you can use them right away once you initialize your folder with `git init`.
 
-The Git hooks are by default located in the `.git/hooks` subfolder, which comes with a list of samples written as shell scripts. They are very simple to follow and use.
+The Git hooks are located in the `.git/hooks` subfolder, which comes with a list of samples written as shell scripts. They are very simple to follow and use.
 
 ![The default Git hooks](/assets/images/githooks-path-samples.png "Git hooks path")
+
 *The default Git hooks available in any repository*
 
 ### Types of hooks
 
-<!--- do we need this part?-->
-There are two groups of Git hooks: *client-side* and *server-side*. 
+There are two groups of [Git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks): *client-side* and *server-side*. 
 
-*Client-side* hooks are triggered by operations such as committing and merging, while *server-side* hooks run on network operations such as receiving pushed commits. 
-You can use these hooks for all sorts of use cases. [1](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) Examples include:
+*Client-side* hooks are triggered by operations such as staging, committing and merging, while *server-side* hooks run on network operations such as receiving pushed commits. 
+You can use these hooks for all sorts of use cases.
 
-<!--- These scripts run before and after pushes to the server.-->
+* *Client-side* examples: 
+  * pre-commit: Check the commit message for spelling errors.
+  * post-commit: Email/SMS team members of a new commit.
 
-* pre-commit: Check the commit message for spelling errors.
-* pre-receive: Enforce project coding standards.
-* post-commit: Email/SMS team members of a new commit.
-* post-receive: Push the code to production.
+
+* *Server-side* examples:
+  * pre-receive: Enforce project coding standards.
+  * post-receive: Push the code to production.
 
 <!---todo add figure-->
 
-Let's take a deeper look into the *client-side* hooks as in the figure below. Once some code is staged, a `pre-commit` hook is executed. This is mostly useful to check some tests are running successfully.
-If the check was not successful, no commit will be possible before fixing that.
-Afterwards, a `prepare-commit-msg` hook is run with the three parameters. This hook is mostly useful if you have automatically generated commits.
-The next one is the `commit-msg` hook, which is the most common used one. This one can check the commit message written by a developer.
-Once all those hooks are successful, a commit is possible.
-Finally, a `post-commit-hook` is executed, which can be useful to send notifications.
+Let's take a deeper look into the *client-side* hooks as in the figure below. 
 
-@@ this figure needs to be described more or moved before the list of use cases@@
+1. When some code is staged, a `pre-commit` hook is executed. This is mostly useful to check some tests are running successfully. If the check fails, no commit will be possible before fixing that.
+2. A `prepare-commit-msg` hook is run with the three arguments. This hook is mostly useful if you have automatically generated commits.
+3. The next one is the `commit-msg` hook, which is the most commonly used one. This hook can check the commit message written by a developer.
+4. Once all those hooks are successful, a commit is successful.
+5. Finally, a `post-commit-hook` is executed, which can be useful to send notifications.
 
 ![Git commit hooks path](/assets/images/commit-hooks-final.drawio.png "Commit hooks")
 
+*A git workflow with the possible client-side hooks*
 
-## Get started with Git hooks
+## Getting started with Git hooks
 
 For simplicity, I'll just present two examples that I've worked with closely:
 
 1. Modify `commit-msg` hook to enforce a check for a ticket number in the commit message.
-2. Use existing tools to apply conventional commits in a Node.js project
+2. Use existing tools to apply conventional commits in a Node.js project.
 
-### Example 1: A simple commit message check
+## 1. Simple commit message check
 
 Follow the next steps to activate your first Git hook:
 
-1. Duplicate the `commit-msg.sample` and rename it to `commit-msg` (with no extension at all).
-1. Give it execution permission using `chmod +x .git/hooks/commit-msg`
-1. Modify the file with the code you need (see examples below)
-1. Save your changes and you are ready to go! It will be picked up automatically by git next time you commit something.
+1. Duplicate the `commit-msg.sample` file in `your-repo/.git/hooks` and rename it to `commit-msg` with no file extension.
+1. Give it execution permission using `chmod +x .git/hooks/commit-msg`.
+1. Modify the file with the code you need (see examples below).
+1. Save your changes and you are ready to go! It will be picked up automatically by git the next time you commit something.
 
 Here is the `commit-msg.sample` code before modifications. It checks the duplicate signed-off-by (SOB) author lines in the commit message:
 
@@ -141,22 +142,26 @@ Now, let's modify this hook to enforce having a reference ticket number in the c
 
 ```ruby
 #!/usr/bin/env ruby
+# Get the file that contains the commit message
 message_file = ARGV[0]
+# Get the commit message
 message = File.read(message_file)
 
+# Regular expression to find the ticket number e.g. [ref: #123]
 $regex = /\[ref: #(\d+)\]/
 
+# If no match is found, print an error and reject the commit
 if !$regex.match(message)
   puts "[COMMIT-MSG] Your message is not formatted correctly"
   exit 1
 end
 ```
 
-After saving the file you will get the follwing error when your commit message doesn't contain the `[ref: #<number>]` pattern:
+After saving the file you will get the following error when your commit message doesn't contain the `[ref: #<number>]` pattern:
 
-![Error when using bad commit message](/assets/images/example-error.png "Error when using bad commit message")
+![Error when using the bad commit message](/assets/images/example-error.png "Error when using the bad commit message")
 
-*An error when using bad commit message*
+*An error when using a bad commit message*
 
 And here's a successful commit message that passed the hook:
 
@@ -164,11 +169,10 @@ And here's a successful commit message that passed the hook:
 
 *A successful commit message*
 
-
-**Tip:** If you want to ignore Git hooks, add the  `--no-verify` argument to your git command. However, this only applies to *client-side* hooks and should only used when absolutely necessary.
+**Tip ℹ️:** If you want to ignore Git hooks, add the  `--no-verify` argument to your git command. However, this only applies to *client-side* hooks and should only be used when absolutely necessary.
 
 <!---
-### Prohibt unwanted code
+### Prohibit unwanted code
 In this example, I'm making sure that nobody forgets debugging code that breaks.
 
 I'll extend the `pre-commit` with this code:
@@ -182,16 +186,16 @@ git diff --cached --name-only | \
 ```
 --->
 
-#### The limitations of plain Git hooks
+### The limitations of plain Git hooks
 
-Distributing the Git hooks to every developer is a typical problem because the hooks are located in the `.git` hidden folder which is usually not pushed to the remote repository. It will also get quickly challenging to handle all the regular expressions and adher to some commits convention.
+Distributing the Git hooks to every developer is a typical problem because the hooks are located in the `.git` hidden folder which is usually not pushed to the remote repository. It will also get quickly challenging to handle all the regular expressions and adhere to some commits conventions.
 
-### Example 2: Apply conventional commits in a Node.js project
+## 2. Apply conventional commits in a Node.js project
 
 To overcome the limitations of the simple process above, I'll demonstrate how we are using git hooks in a Node.js project.
-#### Conventional Commits
+### Conventional Commits
 
-A [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine readable meaning to commit messages. It makes it easier to write a set of automated tools on top of that such as:
+A [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine-readable meaning to commit messages. It makes it easier to write a set of automated tools on top of that such as:
 
 * Automatically generating CHANGELOGs.
 * Automatically determining a semantic version bump (based on the types of commits landed).
@@ -213,15 +217,15 @@ Write the paragraph that explains the limitations of Git hooks.
 [ref: #1]
 ```
 
-There are already a couple of tools that help checking that the commit message has that pattern as demonstrated by [commitlint](#commitlint).
+There are already a couple of tools that help check that the commit message has that pattern as demonstrated by [commitlint](#commitlint) in the next section.
 
-#### Commitlint
+### Commitlint
 
 [commitlint](https://commitlint.js.org/#/) is an awesome package that helps you get commit messages with high quality and provides short feedback cycles by linting commit messages right when they are authored.
 
 It is very easy to use by just installing `commitlint` as a `devDependencies` in your project and defining the configurations you need in a `commitlint.config.js` file in the root of your repository.
 
-This is so straight forward in comparision to what we were trying to do with the plain Git hooks and parsing the params before.
+This is so straightforward in comparison to what we were trying to do with the plain Git hooks and parsing the params before.
 
 To use *commitlint* to have a commit message with the following structure
 
@@ -231,7 +235,8 @@ body?
 footer?
 ```
 
-We can use the simplest example `commitlint.config.js` file that extends the defeault convensions:
+We can use the simplest example `commitlint.config.js` file that extends the default conventions:
+This example enforces commit length, style and many others in just a basic config object.
 
 ```js
 module.exports = {
@@ -307,7 +312,7 @@ Husky works within the `package.json` file by including an object that configure
 
 To get it working, you need to install `husky` as a `devDependencies` in your project.
 
-Afterwards, run a command that will allow Git hooks to be enabled:
+Afterward, run a command that will allow Git hooks to be enabled:
 
 ```bash
 npx husky install
@@ -326,7 +331,7 @@ Next, you will want to adjust the `package.json` file. The last command is run a
 
 ### Checking commit messages with Commitlint and Husky
 
-Commitlint can be configured to run as a *husky* **pre-commit** hook for local setting. To do that you just need to run the following command once for the set up to happen:
+Commitlint can be configured to run as a *husky* **pre-commit** hook for local settings. To do that you just need to run the following command once for the setup to happen:
 
 ```bash
 npx husky add .husky/commit-msg 'npx commitlint --edit $1'
