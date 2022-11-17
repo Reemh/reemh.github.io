@@ -6,8 +6,10 @@ categories: tech
 permalink: /Git hooks/
 ---
 
-tl;dr
+**tl;dr**
+In This post, I introduce the concept of Git hooks and use it to check that the commit message has certain style convention and it contains a ticket number. That's one of many examples of how Git hooks can improve the development workflow and save time and effort.
 
+## Introduction
 
 Imagine you have a team of great software engineers with different level of expertise. 
 They are having issues working together as each person has her/his prefered way of writing and comitting code.
@@ -54,6 +56,13 @@ It's time to rescue the team spirit and introduce Git hooks!
 
 Git hooks are a great way to improve developers' time and collaboration by automatically checking things like grammer, style and length of commit messages and it's a way to automatically check certain things were successful such as test suits and coverage checks or automatically pushing code to stage or production.
 
+As mentioned before, Git hooks are available in any repository that was initialized with `git init` (so every repository).
+
+The Git hooks are by default located in the `.git/hooks` subfolder, which comes with a list of samples written as shell scripts. They are very simple to follow and use.
+
+![The default Git hooks](/assets/images/githooks-path-samples.png "Git hooks path")
+*The default Git hooks available in any repository*
+
 ### Types of hooks
 
 <!--- do we need this part?-->
@@ -71,27 +80,35 @@ You can use these hooks for all sorts of use cases. [1](https://git-scm.com/book
 
 <!---todo add figure-->
 
+Let's take a deeper look into the *client-side* hooks as in the figure below. Once some code is staged, a `pre-commit` hook is executed. This is mostly useful to check some tests are running successfully.
+If the check was not successful, no commit will be possible before fixing that.
+Afterwards, a `prepare-commit-msg` hook is run with the three parameters. This hook is mostly useful if you have automatically generated commits.
+The next one is the `commit-msg` hook, which is the most common used one. This one can check the commit message written by a developer.
+Once all those hooks are successful, a commit is possible.
+Finally, a `post-commit-hook` is executed, which can be useful to send notifications.
+
 @@ this figure needs to be described more or moved before the list of use cases@@
 
 ![Git commit hooks path](/assets/images/commit-hooks-final.drawio.png "Commit hooks")
 
 
-## The coding part (demo)
+## Get started with Git hooks
 
 For simplicity, I'll just present two examples that I've worked with closely:
 
-1. Pre-commit to enforcing certain rules for a commit message
-2. Enforce conventional commits for commit messages @@ correct ??? @@
+1. Modify `commit-msg` hook to enforce a check for a ticket number in the commit message.
+2. Use existing tools to apply conventional commits in a Node.js project
 
+### Example 1: A simple commit message check
 
-As mentioned before, Git hooks are available in any repository that was initialized with `git init` (so every repository).
+Follow the next steps to activate your first Git hook:
 
-The Git hooks are by default located in the `.git/hooks` subfolder, which comes with a list of samples written as shell scripts. They are very simple to follow and use.
+1. Duplicate the `commit-msg.sample` and rename it to `commit-msg` (with no extension at all).
+1. Give it execution permission using `chmod +x .git/hooks/commit-msg`
+1. Modify the file with the code you need (see examples below)
+1. Save your changes and you are ready to go! It will be picked up automatically by git next time you commit something.
 
-![The default Git hooks](/assets/images/Git hooks-path-samples.png "Git hooks path")
-*The default Git hooks available in any repository*
-
-Here is the `commit-msg.sample` that checks the duplicate signed-off-by (SOB) author lines in the commit message:
+Here is the `commit-msg.sample` code before modifications. It checks the duplicate signed-off-by (SOB) author lines in the commit message:
 
 ```bash
 #!/bin/sh
@@ -120,13 +137,6 @@ test "" = "$(grep '^Signed-off-by: ' "$1" |
 }
 ```
 
-Follow the next steps to activate your first Git hook:
-
-1. Duplicate the `commit-msg.sample` and rename it to `commit-msg` (with no extension at all).
-1. Give it execution permission using `chmod +x .git/hooks/commit-msg`
-1. Modify the file with the code you need (see examples below)
-1. Save your changes and you are ready to go! It will be picked up automatically by git.
-
 Now, let's modify this hook to enforce having a reference ticket number in the commit message like this:
 
 ```ruby
@@ -142,7 +152,7 @@ if !$regex.match(message)
 end
 ```
 
-After saving the file you will get the follwing error when your commit message that doesn't contain the `[ref: #<number>]` pattern:
+After saving the file you will get the follwing error when your commit message doesn't contain the `[ref: #<number>]` pattern:
 
 ![Error when using bad commit message](/assets/images/example-error.png "Error when using bad commit message")
 
@@ -155,7 +165,7 @@ And here's a successful commit message that passed the hook:
 *A successful commit message*
 
 
-**Tip:** If you want to ignore Git hooks, add the  `--no-verify` argument to your git command. Please only do this only if you absolutely know what you are doing.
+**Tip:** If you want to ignore Git hooks, add the  `--no-verify` argument to your git command. However, this only applies to *client-side* hooks and should only used when absolutely necessary.
 
 <!---
 ### Prohibt unwanted code
@@ -172,7 +182,14 @@ git diff --cached --name-only | \
 ```
 --->
 
-### Conventional Commits
+#### The limitations of plain Git hooks
+
+Distributing the Git hooks to every developer is a typical problem because the hooks are located in the `.git` hidden folder which is usually not pushed to the remote repository. It will also get quickly challenging to handle all the regular expressions and adher to some commits convention.
+
+### Example 2: Apply conventional commits in a Node.js project
+
+To overcome the limitations of the simple process above, I'll demonstrate how we are using git hooks in a Node.js project.
+#### Conventional Commits
 
 A [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine readable meaning to commit messages. It makes it easier to write a set of automated tools on top of that such as:
 
@@ -188,9 +205,25 @@ The structure of conventional commits messages looks like this:
 [optional footer(s)]
 ```
 
-@@ what is commitlint? you haven't introduced this before. I'd expect at least a sentence and a link to the page. @@
+So the example we've seen in the screenshots before can become something like this (an optional body was added here for demonstration)
 
-Following the convention mentioned above with *commitlint*, a commit message has the following structure:
+```
+feat(blog): Add limitation part.
+Write the paragraph that explains the limitations of Git hooks.
+[ref: #1]
+```
+
+There are already a couple of tools that help checking that the commit message has that pattern as demonstrated by [commitlint](#commitlint).
+
+#### Commitlint
+
+[commitlint](https://commitlint.js.org/#/) is an awesome package that helps you get commit messages with high quality and provides short feedback cycles by linting commit messages right when they are authored.
+
+It is very easy to use by just installing `commitlint` as a `devDependencies` in your project and defining the configurations you need in a `commitlint.config.js` file in the root of your repository.
+
+This is so straight forward in comparision to what we were trying to do with the plain Git hooks and parsing the params before.
+
+To use *commitlint* to have a commit message with the following structure
 
 ```
 type(scope?): subject
@@ -198,61 +231,16 @@ body?
 footer?
 ```
 
-@@ unclear what screenshot do you reference here? @@
+We can use the simplest example `commitlint.config.js` file that extends the defeault convensions:
 
-So the example we've seen in the screenshots before can become something like this (an optional body was added here for demonstration)
-
-```
-feat(blog): Add limitation part.
-Write the paragraph that explains what the limitations of Git hooks are.
-[ref: #1]
-```
-
-### The limitations of plain Git hooks
-
-Distributing the Git hooks to every developer is a typical problem because the hooks are located in the `.git` repository which are usually not pushed to the remote repository. It will also get quickly challenging to handle all the regular expressions and adher to something like converntional commits.
-
-@@ add transition sentence here to introduce husky @@
-
-## Husky
-@@ now you are talking in I-form while before you wrote in you and unpersonal form @@
-
-@@ Husky solves this issue by "installing" the Git hooks from source code files located in the repository. Another advantage is that we can Node.js scripts (instead of shell scripts).@@
-
-Since I'm writing a lot of **Node.js** code, my projects use [Husky](https://github.com/typicode/husky), an npm package that improves commit messages and the management of the hooks in a Node.js project.
-
-It is a great option that scales and helps you define everything only once in one place for all.
-
-Husky works within the `package.json` file by including an object that configures Husky to run certain scripts, and then Husky manages the script at specific points in the Git lifecycle. 
-
-After Husky has finished installing, then run a command that will allows Git hooks to be enabled:
-
-```bash
-npx husky install
-```
-
-Next, you will want to adjust the package.json file. The last command is run after the installation process concludes:
-
-// package.json
-```json
-{
-  "scripts": {
-    "prepare": "husky install"
-  }
+```js
+module.exports = {
+    extends: [
+        "@commitlint/config-conventional"
+    ],
 }
 ```
 
-## Commitlint
-@@ consider moving this paragraph or section up to introduce commitlint earlier? otherwise move the other example below this section? @@
-
-[commitlint](https://commitlint.js.org/#/) is an awesome package that helps you get commit messages with high quality and provides short feedback cycles by linting commit messages right when they are authored.
-
-It is very easy to use by just installing `commitlint` as a `devDependencies` in your project and defining the configurations you need in a `commitlint.config.js` file.
-You can see that this is so straight forward in comparision to what we were trying to do with the plain Git hooks and parsing the params above.
-
-@@ what is the filename? where is it located? @@
-
-An example config file that would adher to the conventional commits looks like this:
 
 ```js
 /**
@@ -286,7 +274,7 @@ const configuration = {
    * Any rules defined here will override rules from @commitlint/config-conventional
    */
   rules: {
-	  'body-leading-blank': [1, 'always'],
+    'body-leading-blank': [1, 'always'],
     'footer-leading-blank': [1, 'always'],
     'header-max-length': [1, 'always', 72],
     'scope-case': [2, 'always', 'lower-case'],
@@ -308,12 +296,46 @@ const configuration = {
 module.exports = configuration;
 ```
 
-This examples enforces commit length, style and many others in just a basic config object. We will talk more about the `parserPreset` later.
-@@ do you really want to talk more about `parserPreset` later? otherwise just add a comment block above this code that explains it briefly @@
+This examples enforces commit length, style and many others in just a basic config object.
 
-Commitlint can be configured to run as a *husky* **pre-commit** hook for local setting and can be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly.
+#### Husky
 
-Here's how it looks like in GitLab CI
+[Husky](https://github.com/typicode/husky) is an npm package that improves commit messages and the management of the hooks in a Node.js project. It solves the issue of the hidden `.git/hooks` by "installing" the Git hooks from source code files located in the repository. 
+It is a great option that scales and helps you define everything only once in one place for all.
+
+Husky works within the `package.json` file by including an object that configures Husky to run certain scripts, and then Husky manages the script at specific points in the Git lifecycle. 
+
+To get it working, you need to install `husky` as a `devDependencies` in your project.
+
+Afterwards, run a command that will allow Git hooks to be enabled:
+
+```bash
+npx husky install
+```
+
+Next, you will want to adjust the `package.json` file. The last command is run after the installation process concludes:
+
+// package.json
+```json
+{
+  "scripts": {
+    "prepare": "husky install"
+  }
+}
+```
+
+### Checking commit messages with Commitlint and Husky
+
+Commitlint can be configured to run as a *husky* **pre-commit** hook for local setting. To do that you just need to run the following command once for the set up to happen:
+
+```bash
+npx husky add .husky/commit-msg 'npx commitlint --edit $1'
+```
+
+
+Commitlint can also be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly and never skipped with `--no-verify` argument.
+
+The configuration in the example GitLab CI would look as simple as this:
 
 ```
 lint:commit:
