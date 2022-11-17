@@ -24,9 +24,9 @@ She checked the commit message for that and found:
 
 There was no ticket number, no further info, no explanation or any reference. The author of that line has left the company so it's not possible to follow up with him.
 
-She removed that line and ran all local tests successfully. She thought "the bug" was obviously fixed in some other way.
+She removed that line and ran some local tests successfully. She thought "the bug" was obviously fixed in some other way.
 
-After the next release, "The bug" reappeared again. It was documented in a previous ticket that everyone forgot. Analyzing that piece of code would have been much easier when reading the ticket but since nobody linked the ticket to the code, it was impossible to find it in the sea of tickets.
+After the next release, "the bug" reappeared again. It was documented in a previous ticket that everyone forgot. Analyzing that piece of code would have been much easier when reading the ticket but since nobody linked the ticket to the code, it was impossible to find it in the sea of tickets.
 
 Improvement idea 💡: **Add a ticket number to every commit message!**
 
@@ -84,7 +84,7 @@ You can use these hooks for all sorts of use cases.
 Let's take a deeper look into the *client-side* hooks as in the figure below. 
 
 1. When some code is staged, a `pre-commit` hook is executed. This is mostly useful to check some tests are running successfully. If the check fails, no commit will be possible before fixing that.
-2. A `prepare-commit-msg` hook is run with the three arguments. This hook is mostly useful if you have automatically generated commits.
+2. A `prepare-commit-msg` hook is run with the three arguments shown in the figure. This hook is useful if you have automatically generated commits.
 3. The next one is the `commit-msg` hook, which is the most commonly used one. This hook can check the commit message written by a developer.
 4. Once all those hooks are successful, a commit is successful.
 5. Finally, a `post-commit-hook` is executed, which can be useful to send notifications.
@@ -331,16 +331,16 @@ Next, you will want to adjust the `package.json` file. The last command is run a
 
 ### Checking commit messages with Commitlint and Husky
 
-Commitlint can be configured to run as a *husky* **pre-commit** hook for local settings. To do that you just need to run the following command once for the setup to happen:
+Commitlint can be configured to run as a *husky* pre-commit hook for local settings. To do that you just need to run the following command once for the setup to happen:
 
 ```bash
 npx husky add .husky/commit-msg 'npx commitlint --edit $1'
 ```
-
+![Integrating Husky with commitlint to check the commit message](/assets/images/husky-Page-2.drawio.png "Integrating Husky with commitlint to check the commit message")
 
 Commitlint can also be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly and never skipped with `--no-verify` argument.
 
-The configuration in the example GitLab CI would look as simple as this:
+An example configuration in *GitLab CI* would look as simple as this:
 
 ```
 lint:commit:
@@ -351,4 +351,7 @@ lint:commit:
 
 ## Summary
 
-TODO link and mention automatic release notes generation
+Git hooks are scripts that can automatically be integrated in the git workflow to run certain checks and tests. They are very helpful for enforcing development best practices. 
+One of my favorite is keeping a reference ticket number in every commit message to make it easier to track and understand. 
+Other more advanced commits conventions exist and a couple of tools can help you set them up into your workflow within a couple of minutes as we have seen for a Node.js project. 
+This unifies the way team members work and helps reduce code ambiguity and human errors. All of that saves precious developers' time that they can use thinking of and building great features they enjoy instead of worrying about finding a certain convention or writing release notes manually.
