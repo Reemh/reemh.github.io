@@ -5,19 +5,6 @@ permalink: /about/
 ---
 Hi,
 
-I'm currently testing Jekyll, so this page is still under construction. Come back soon to see the final version.
+I'm a software engineer based in Austria. I'm currently testing [Jekyll](https://github.com/jekyll) to build this page. Feel free to come back soon to see the final version.
 
-Meanwhile, feel free to contact me using one of the links in the footer.
-
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
-
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
-
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
-
-
-[jekyll-organization]: https://github.com/jekyll
+Meanwhile, you can always reach out to me using one of the links in the footer.

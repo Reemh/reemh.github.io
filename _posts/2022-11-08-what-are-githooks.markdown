@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "What are Git hooks?"
+title:  "What are Git hooks and how can they help your development workflow"
 date:   2022-11-08 20:07:52 +0200
 categories: [git, tech] 
 tags: [git, githooks, js, husky]
@@ -9,10 +9,10 @@ permalink: /githooks/
 
 <fieldset class="field-set" markdown="1">
 <legend class="leg-title">TL;DR</legend>
-In This post, I introduce the concept of Git hooks and use it to check that the commit message has a certain style convention and it contains a ticket number. That's one of many examples of how Git hooks can improve the development workflow and save time and effort by hooking certain actions in the git workflow.
+In this post, I introduce the concept of Git hooks and use it to check that the commit message has a certain style convention and it contains a ticket number. You can jump right into the demo [here](#demo). That's one of many examples of how Git hooks can improve the development workflow and save time and effort by hooking certain actions in the Git workflow.
 </fieldset>
 
-## The Motivation
+## The motivation
 
 Imagine you have a team of great software engineers with different levels of expertise. 
 Each person has his or her preferred way of writing and committing code.
@@ -194,7 +194,7 @@ Distributing the Git hooks to every developer is a typical problem because the h
 
 To overcome the limitations of the simple process above, I'll demonstrate how we are using git hooks in a Node.js project to check commit messages style.
 
-![Integrating Husky with commitlint to check the commit message](/assets/images/husky-Page-2.drawio.png "Integrating Husky with commitlint to check the commit message")
+
 ### Conventional Commits
 
 A [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine-readable meaning to commit messages. It makes it easier to write a set of automated tools on top of that such as:
@@ -332,9 +332,8 @@ Afterward, run a command that will allow Git hooks to be enabled:
 npx husky install
 ```
 
-Next, you will want to adjust the `package.json` file. The last command is run after the installation process concludes:
+At last, you might want to adjust the `package.json` file to add the following. This script runs when git dependencies are being installed:
 
-// package.json
 ```json
 {
   "scripts": {
@@ -344,6 +343,8 @@ Next, you will want to adjust the `package.json` file. The last command is run a
 ```
 
 ### Checking commit messages with Commitlint and Husky
+
+![Integrating Husky with commitlint to check the commit message](/assets/images/husky-Page-2.drawio.png "Integrating Husky with commitlint to check the commit message")
 
 Commitlint can be configured to run as a *husky* pre-commit hook for local settings. To do that you just need to run the following command once for the setup to happen:
 
@@ -401,10 +402,16 @@ lint:commit:
   script:
     - echo "${CI_COMMIT_MESSAGE}" | npx commitlint
 ```
+## Demo
+
+If you like to watch a simplified demo of this content, check out this video:
+<iframe width="560" height="315" src="https://www.youtube.com/embed/xsPQZ08CTc8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen> </iframe>
+
+The source code for that demo can be found [here](https://github.com/Reemh/githooks-node).
 
 ## Summary
 
-Git hooks are scripts that can automatically be integrated in the git workflow to run certain checks and tests. They are very helpful for enforcing development best practices. 
+Git hooks are scripts that can automatically be integrated in the Git workflow to run certain checks and tests. They are very helpful for enforcing development best practices. 
 One of my favorite is keeping a reference ticket number in every commit message to make it easier to track and understand. 
 
 Other more advanced commits conventions exist and a couple of tools can help you set them up into your workflow within a couple of minutes as we have seen for a Node.js project. 
