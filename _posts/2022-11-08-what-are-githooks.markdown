@@ -192,7 +192,9 @@ Distributing the Git hooks to every developer is a typical problem because the h
 
 ## 2. Apply conventional commits in a Node.js project
 
-To overcome the limitations of the simple process above, I'll demonstrate how we are using git hooks in a Node.js project.
+To overcome the limitations of the simple process above, I'll demonstrate how we are using git hooks in a Node.js project to check commit messages style.
+
+![Integrating Husky with commitlint to check the commit message](/assets/images/husky-Page-2.drawio.png "Integrating Husky with commitlint to check the commit message")
 ### Conventional Commits
 
 A [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/) is a specification for adding human and machine-readable meaning to commit messages. It makes it easier to write a set of automated tools on top of that such as:
@@ -236,7 +238,6 @@ footer?
 ```
 
 We can use the simplest example `commitlint.config.js` file that extends the default conventions:
-This example enforces commit length, style and many others in just a basic config object.
 
 ```js
 module.exports = {
@@ -246,6 +247,8 @@ module.exports = {
 }
 ```
 
+We can extend `commitlint.config.js` by extending `@commitlint/config-conventional` with custom rules that fits our workflow.
+The following example enforces commit length and style and checks a ticket number by just extending the configuration object.
 
 ```js
 /**
@@ -259,32 +262,42 @@ const scopes = [
 ];
 
 const configuration = {
-  /*
-   * Resolve and load @commitlint/config-conventional from node_modules.
-   * Referenced packages must be installed
+  /**
+   * Extend the default config-conventional
    */
   extends: ['@commitlint/config-conventional'],
  
+  /**
+   * The parser preset used to parse commit messages
+   * Always look for a prefix such as `ABC-` or `#`
+   */
   parserPreset: {
     parserOpts: {
       issuePrefixes: ['ABC-', '#'],
     },
   },
-  /*
-   * Resolve and load @commitlint/format from node_modules.
-   * Referenced package must be installed
+  /**
+   * Commitlint can output the issues encountered in different formats
    */
   formatter: '@commitlint/format',
-  /*
+  /**
    * Any rules defined here will override rules from @commitlint/config-conventional
+   * So we only define the extra rules that we want on top of conventinal commits
+   * The format is [level, applicable, value]
+   * - The levels are 0 for disabled, 1 for warning, 2 for error
+   * - Applicable can be `always` or `never` to invert the rule
+   * - The value used for the rule
    */
   rules: {
+    // check the issuePrefixes defined in ParserOpts
+    'references-empty': [2, 'never'],
     'body-leading-blank': [1, 'always'],
     'footer-leading-blank': [1, 'always'],
-    'header-max-length': [1, 'always', 72],
+    // Always use a scope written in a lower case from the list of defined scopes
     'scope-case': [2, 'always', 'lower-case'],
     'scope-empty': [2, 'never'],
     'scope-enum': [2, 'always', scopes],
+    // Start your commit subject with a capital letter and end with a full stop
     'subject-case': [
       1,
       'always',
@@ -292,6 +305,7 @@ const configuration = {
     ],
     'subject-empty': [2, 'never'],
     'subject-full-stop': [1, 'always', '.'],
+    // Always use a type written in lower case from the list of types
     'type-case': [2, 'always', 'lower-case'],
     'type-empty': [2, 'never'],
     'type-enum': [2, 'always', ['feat', 'fix', 'docs', 'style', 'refactor', 'test', 'revert', 'release']],
@@ -301,7 +315,7 @@ const configuration = {
 module.exports = configuration;
 ```
 
-This examples enforces commit length, style and many others in just a basic config object.
+To get `commitlint` to be integrated in the workflow, we need to run it as part of Git hooks. For that we will be setting up `Husky` to configure the hooks to run `commitlint` as explained in the next sections.
 
 #### Husky
 
@@ -336,8 +350,41 @@ Commitlint can be configured to run as a *husky* pre-commit hook for local setti
 ```bash
 npx husky add .husky/commit-msg 'npx commitlint --edit $1'
 ```
-![Integrating Husky with commitlint to check the commit message](/assets/images/husky-Page-2.drawio.png "Integrating Husky with commitlint to check the commit message")
 
+#### Test the hooks
+
+To test the last commit in your branch you can do
+```bash
+npx commitlint --from HEAD~1 --to HEAD --verbose
+```
+
+An example errorenous message will be:
+```bash
+⧗   input: fix(tooling): Fix broken doc generation
+✖   references may not be empty [references-empty]
+⚠   subject must end with full stop [subject-full-stop]
+
+✖   found 1 problems, 1 warnings
+ⓘ   Get help: https://github.com/conventional-changelog/commitlint/#what-is-commitlint   
+```
+
+As we have seen we could also see warnings if it's a minor improvement only as a missing full stop at the end of the commit message like this:
+```bash
+⧗   input: fix(tooling): Fix broken doc generation #1
+⚠   subject must end with full stop [subject-full-stop]
+
+⚠   found 0 problems, 1 warnings
+ⓘ   Get help: https://github.com/conventional-changelog/commitlint/#what-is-commitlint   
+```
+
+If the message is correct then the test will look like this:
+```bash
+⧗   fix(tooling): Fix broken doc generation.
+    ref: #1
+✔   found 0 problems, 0 warnings
+```
+
+### Server side commits check
 Commitlint can also be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly and never skipped with `--no-verify` argument.
 
 An example configuration in *GitLab CI* would look as simple as this:
@@ -353,5 +400,10 @@ lint:commit:
 
 Git hooks are scripts that can automatically be integrated in the git workflow to run certain checks and tests. They are very helpful for enforcing development best practices. 
 One of my favorite is keeping a reference ticket number in every commit message to make it easier to track and understand. 
+
 Other more advanced commits conventions exist and a couple of tools can help you set them up into your workflow within a couple of minutes as we have seen for a Node.js project. 
-This unifies the way team members work and helps reduce code ambiguity and human errors. All of that saves precious developers' time that they can use thinking of and building great features they enjoy instead of worrying about finding a certain convention or writing release notes manually.
+This unifies the way team members work and helps reduce code ambiguity and human errors.
+
+All of that saves precious developers' time that they can use thinking of and building great features they enjoy instead of worrying about finding a certain convention or writing release notes manually.
+
+Thank you for reading!
