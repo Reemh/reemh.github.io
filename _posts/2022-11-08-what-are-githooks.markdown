@@ -358,13 +358,17 @@ To test the last commit in your branch you can do
 npx commitlint --from HEAD~1 --to HEAD --verbose
 ```
 
+It's also possible to test any message with `commitlint` configurations using the command
+```bash
+echo "your commit message" | commitlint
+```
+
 An example errorenous message will be:
 ```bash
-⧗   input: fix(tooling): Fix broken doc generation
+⧗   input: fix(tooling): Fix broken doc generation.
 ✖   references may not be empty [references-empty]
-⚠   subject must end with full stop [subject-full-stop]
 
-✖   found 1 problems, 1 warnings
+✖   found 1 problems, 0 warnings
 ⓘ   Get help: https://github.com/conventional-changelog/commitlint/#what-is-commitlint   
 ```
 
@@ -383,6 +387,8 @@ If the message is correct then the test will look like this:
     ref: #1
 ✔   found 0 problems, 0 warnings
 ```
+
+With that we have made sure our commits always have reference ticket number.
 
 ### Server side commits check
 Commitlint can also be [configured with CI server](https://commitlint.js.org/#/guides-ci-setup) to ensure that all commits are linted correctly and never skipped with `--no-verify` argument.
